@@ -8,4 +8,7 @@ Target: https://www.metal-archives.com/lists/SE
 
 # Progress Log:
 
-- Sep. 25, 2017: Extracted band URLs from the json response, could crawl through the first 500 entries to fetch each band profile. It never left the first page so some bug fixing is due.
+- Sep. 25, 2017: 
+1. Extracted band URLs from the json response, could crawl through the first 500 entries to fetch each band profile.
+2. Request loop fixed, it goes beyond the first DataTable page. Everything is saved in the local directory even though it's just for testing purposes.
+
