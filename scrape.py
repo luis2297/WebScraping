@@ -40,7 +40,6 @@ def crawler():
 
     while current_records < total_records:
         for x in range(500):
-
             if current_records == total_records:
                 break
 
@@ -57,6 +56,7 @@ def crawler():
                 soup = BeautifulSoup(r.text, 'html.parser')
                 with open('band_pages/{}/{}.html'.format(page, x), 'w', encoding="utf-8") as bp:
                     bp.write(str(soup))
+                    
                 print("Status code {}.".format(r.status_code))
                 print("{} / {}".format(current_records, total_records))
             else:
