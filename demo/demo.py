@@ -1,3 +1,5 @@
+# OJO: La parte de base de datos sólo está implementada a manera de prueba de concepto. (FK's fijos, etc.)
+
 # pip install bs4
 from bs4 import BeautifulSoup
 
