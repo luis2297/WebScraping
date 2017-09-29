@@ -32,14 +32,15 @@ class Band(Base):
     lyrical_themes = Column('lyrical_themes', String)
     label = Column('label', String)
 
+
 # Modelamos una clase "Discography" para todos los atributos que extraímos.
 class Discography(Base):
     __tablename__ = "Discography"
 
     id = Column('id', Integer, primary_key=True)
     name = Column('name', String)
-    type = Column('country', String)
-    year = Column('location', String)
+    release_type = Column('release_type', String)
+    year = Column('year', String)
     band_id = Column('band_id', Integer, ForeignKey("Band.id"), nullable=False)
 
 # Modelamos una clase "Member" para todos los atributos que extraímos.
@@ -191,7 +192,7 @@ def get_band_disco(soup):
                 if x == 0:
                     discography.name = str(s.getText())
                 if x == 1:
-                    discography.type = str(s.getText())
+                    discography.release_type = str(s.getText())
                 if x == 2:
                     discography.year = str(s.getText())
                 # -> Una vez que termina de construir el row le damos stage.
