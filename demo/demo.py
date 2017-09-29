@@ -43,6 +43,7 @@ class Discography(Base):
     year = Column('year', String)
     band_id = Column('band_id', Integer, ForeignKey("Band.id"), nullable=False)
 
+
 # Modelamos una clase "Member" para todos los atributos que extraímos.
 class Member(Base):
     __tablename__ = "Member"
@@ -54,7 +55,7 @@ class Member(Base):
 
 
 # Se crea el engine para guardar todo en un archivo .db.
-# Si no existen las tablas las crea automáticamente.
+# Si no existen las tablas las crea automáticamente y es autoincremental por default.
 engine = create_engine('sqlite:///swedish_bands.db', echo=True)
 # Estos dos son necesarios para cada sesión de base de datos.
 Base.metadata.create_all(bind=engine)
@@ -81,13 +82,13 @@ def soup_it_up():
         if opt != '4':
             if opt == '1':
                 get_band_attributes(soup)
-                print(">>El contenido generado se encuentra en: band_info.txt")
+                print(">>Los atributos de la banda han sido guardados en base de datos.")
             elif opt == '2':
                 get_band_disco(soup)
-                print(">>El contenido generado se encuentra en: disco_info.txt")
+                print(">>La discografía ha sido guardada en base de datos.")
             elif opt == '3':
                 get_band_members(soup)
-                print(">>El contenido generado se encuentra en: member_info.txt")
+                print(">>Los miembros han sido guardados en base de datos.")
         else:
             break
 
@@ -102,47 +103,40 @@ def get_band_attributes(soup):
     # -> Busca <h1 class="band_name">, que es el tag donde se encuentra el nombre de la banda.
     band_name = soup.find("h1", {"class": "band_name"})
 
-    # Con un archivo de texto abierto para escritura:
-    with open('band_info.txt', 'w') as bp:
-        # -> Del tag resultante regresa sólo el texto (el nombre de la banda).
-        bp.write(band_name.getText() + '\n')
 
-        # -> Buscamos en <dd> que es donde se encuentran los atributos generales.
-        # -> Regresa una lista de tags y su contenido.
-        attributes = soup.find_all("dd")
+    # -> Buscamos en <dd> que es donde se encuentran los atributos generales.
+    # -> Regresa una lista de tags y su contenido.
+    attributes = soup.find_all("dd")
 
-        # Una lista para usar los datos sin los whitespaces molestos que trae 'years_active'.
-        formatted_attributes = []
-        # -> Por cada elemento de la lista.
-        for atr in attributes:
-            # -> Separa los strings en listas.
-            s_list = atr.getText().split()
-            # -> Se junta de nuevo como string pero con whitespaces normales.
-            s = " ".join(map(str, s_list))
-            # -> Se pasa a lista de nuevo ya spliteado.
-            formatted_attributes.append(s)
-            # -> Escribe a archivo.
-            bp.write(s + '\n')
+    # Una lista para usar los datos sin los whitespaces molestos que trae 'years_active'.
+    formatted_attributes = []
+    # -> Por cada elemento de la lista.
+    for atr in attributes:
+        # -> Separa los strings en listas.
+        s_list = atr.getText().split()
+        # -> Se junta de nuevo como string pero con whitespaces normales.
+        s = " ".join(map(str, s_list))
+        # -> Se pasa a lista de nuevo ya spliteado.
+        formatted_attributes.append(s)
 
-        # Añadimos a base de datos.
-        # No se requieren queries para insertar, sólo asignar al objeto instanciado.
-        band.id = 1
-        band.name = band_name.getText()
-        band.country = formatted_attributes[0]
-        band.location = formatted_attributes[1]
-        band.status = formatted_attributes[2]
-        band.formed_in = formatted_attributes[3]
-        band.genre = formatted_attributes[4]
-        band.lyrical_themes = formatted_attributes[5]
-        band.label = formatted_attributes[6]
-        band.years_active = formatted_attributes[7]
+    # Añadimos a base de datos.
+    # No se requieren queries para insertar, sólo asignar al objeto instanciado.
+    band.name = band_name.getText()
+    band.country = formatted_attributes[0]
+    band.location = formatted_attributes[1]
+    band.status = formatted_attributes[2]
+    band.formed_in = formatted_attributes[3]
+    band.genre = formatted_attributes[4]
+    band.lyrical_themes = formatted_attributes[5]
+    band.label = formatted_attributes[6]
+    band.years_active = formatted_attributes[7]
 
-        # Hacemos una especie de staging a los cambios.
-        session.add(band)
-        # Guardamos los cambios a base de datos.
-        session.commit()
-        # Cerramos sesión.
-        session.close()
+    # Hacemos una especie de staging a los cambios.
+    session.add(band)
+    # Guardamos los cambios a base de datos.
+    session.commit()
+    # Cerramos sesión.
+    session.close()
 
 
 def get_band_disco(soup):
@@ -173,33 +167,24 @@ def get_band_disco(soup):
     # Elimina el primero porque no se necesita.
     disco_entries.pop(0)
 
-    # Con un archivo de texto abierto para escritura:
-    with open('disco_info.txt', 'w') as di:
-        # -> Un contador para tener control de los id insertados a base de datos.
-        id_counter = 0
-        # -> Por cada elemento en disco_entries:
-        for item in disco_entries:
-            # -> Avanzamos el contador, instanciamos la discografía e insertamos.
-            id_counter += 1
-            discography = Discography()
-            discography.id = id_counter
-            discography.band_id = 1
-            # -> Con un ciclo mientras x < 3:
-            for x in range(3):
-                # -> Busca todos los tags <td> usando el índice 'x'.
-                s = item.find_all("td")[x]
-                # -> Como en este caso los atributos de la discografía vienen en 3 partes, condicionamos:
-                if x == 0:
-                    discography.name = str(s.getText())
-                if x == 1:
-                    discography.release_type = str(s.getText())
-                if x == 2:
-                    discography.year = str(s.getText())
-                # -> Una vez que termina de construir el row le damos stage.
-                session.add(discography)
-                # -> Toma el texto de cada uno de estos y escribe a archivo.
-                di.write(str(s.getText()) + '\n')
-            di.write('\n')
+    # -> Por cada elemento en disco_entries:
+    for item in disco_entries:
+        # -> Avanzamos el contador, instanciamos la discografía e insertamos.
+        discography = Discography()
+        discography.band_id = 1
+        # -> Con un ciclo mientras x < 3:
+        for x in range(3):
+            # -> Busca todos los tags <td> usando el índice 'x'.
+            s = item.find_all("td")[x]
+            # -> Como en este caso los atributos de la discografía vienen en 3 partes, condicionamos:
+            if x == 0:
+                discography.name = str(s.getText())
+            if x == 1:
+                discography.release_type = str(s.getText())
+            if x == 2:
+                discography.year = str(s.getText())
+            # -> Una vez que termina de construir el row le damos stage.
+            session.add(discography)
 
     # Guardamos los cambios en base de datos.
     session.commit()
@@ -217,22 +202,14 @@ def get_band_members(soup):
     # De la búsqueda anterior encuentra todos los <a class="bold">.
     member_finder = current_members.find_all("a", {"class": "bold"})
 
-    # Con un archivo de texto abierto para escritura:
-    with open('member_info.txt', 'w') as mi:
-        # -> Un contador para tener control de los id insertados a base de datos.
-        id_counter = 0
-        # -> Con un ciclo mientras x < tamaño de member_finder.
-        for x in range(len(member_finder)):
-            # -> Avanzamos el contador, instanciamos la clase miembro e insertamos.
-            member = Member()
-            id_counter += 1
-            member.id = id_counter
-            member.band_id = 1
-            member.name = str(member_finder[x].getText())
-            # Stage al row nuevo.
-            session.add(member)
-            # -> Escribe a archivo el nombre de cada miembro de la banda.
-            mi.write(str(member_finder[x].getText()) + '\n')
+    # -> Con un ciclo mientras x < tamaño de member_finder.
+    for x in range(len(member_finder)):
+        # -> Avanzamos el contador, instanciamos la clase miembro e insertamos.
+        member = Member()
+        member.band_id = 1
+        member.name = str(member_finder[x].getText())
+        # Stage al row nuevo.
+        session.add(member)
 
     # Guardamos los cambios en base de datos.
     session.commit()
