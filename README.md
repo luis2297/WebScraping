@@ -1,7 +1,7 @@
 # WebScraping
 Web scraping in Python.
 
-Playing with concepts for a school project still so changes may be drastic.
+Playing with concepts for a team school project still so changes may be drastic.
 
 Target: https://www.metal-archives.com/lists/SE
 
@@ -14,4 +14,7 @@ Target: https://www.metal-archives.com/lists/SE
 
 - Sep. 26, 2017:
 A unit demo was added.
+
+- Sep. 28, 2017:
+A very basic idea of ORM was implemented to the demo.
 
