@@ -169,7 +169,7 @@ def get_band_disco(soup):
 
     # -> Por cada elemento en disco_entries:
     for item in disco_entries:
-        # -> Avanzamos el contador, instanciamos la discografía e insertamos.
+        # -> Instanciamos la discografía e insertamos.
         discography = Discography()
         discography.band_id = 1
         # -> Con un ciclo mientras x < 3:
@@ -204,7 +204,7 @@ def get_band_members(soup):
 
     # -> Con un ciclo mientras x < tamaño de member_finder.
     for x in range(len(member_finder)):
-        # -> Avanzamos el contador, instanciamos la clase miembro e insertamos.
+        # -> Instanciamos la clase miembro e insertamos.
         member = Member()
         member.band_id = 1
         member.name = str(member_finder[x].getText())
