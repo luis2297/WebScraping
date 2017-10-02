@@ -19,7 +19,7 @@ The goal is to fetch all [these bands](https://www.metal-archives.com/lists/SE) 
 |:-:|:-:|
 |Jaime Villarreal   |[jvillarreal7](https://github.com/jvillarreal7)   |
 |Cuauhtémoc Martínez   |[CMAREQ](https://github.com/CMAREQ)   |
-|Enrique Castillo   |[ecete](https://github.com/ecete)   |
+|Luis Carlos Estrada   |[--]   |
 |Emilio Almazán   |[--]  |
 |Georgina Valenzuela   |[--]  |
 
