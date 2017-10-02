@@ -1,30 +1,32 @@
 # WebScraping
 Web scraping in Python.
 
+
+## Motivation
 Team school project for the "Software Design and Architecture" class.
 
 The goal is to fetch all [these bands](https://www.metal-archives.com/lists/SE) from the website and store them inside a database with the help of scraping and ORM libraries.
 
 
-## Libraries used:
+## Libraries used
 - [BeautifulSoup](https://www.crummy.com/software/BeautifulSoup/)
 - [Requests](http://docs.python-requests.org/en/master/)
 - [URLExtract](https://pypi.python.org/pypi/urlextract)
 - [SQLAlchemy](https://www.sqlalchemy.org/)
 
 
-## Team:
+## Team
 
 |Team Member  |GitHub   |
 |:-:|:-:|
 |Jaime Villarreal   |[jvillarreal7](https://github.com/jvillarreal7)   |
 |Cuauhtémoc Martínez   |[CMAREQ](https://github.com/CMAREQ)   |
-|Luis Carlos Estrada   |[--]   |
+|Luis Carlos Estrada   |[luis2297](https://github.com/luis2297)   |
 |Emilio Almazán   |[--]  |
 |Georgina Valenzuela   |[--]  |
 
 
-## Progress Log:
+## Progress Log
 
 - Sep. 25, 2017: 
 1. Extracted band URLs from the json response, could crawl through the first 500 entries to fetch each band profile.
