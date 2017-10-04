@@ -80,8 +80,7 @@ def crawler():
 
     target_url = current_target_url(page, display_start)
 
-    #total_records = get_total_records(target_url)
-    total_records = 50
+    total_records = get_total_records(target_url)
     json_data = get_json_data(target_url)
 
 
@@ -101,12 +100,10 @@ def crawler():
             r = requests.get(extracted_url[0])
             if r.status_code == 200:
                 soup = BeautifulSoup(r.text, 'html.parser')
-                session = Session()
                 get_band_attributes(soup)
-                get_band_disco(soup)
-                get_band_members(soup)
-                session.commit()
-                session.close()
+                get_band_disco(soup, current_records)
+                get_band_members(soup, current_records)
+
 
                 # with open('band_pages/{}/{}.html'.format(page, x), 'w', encoding="utf-8") as bp:
                 #    bp.write(str(soup))
@@ -127,7 +124,7 @@ def crawler():
 
 def get_band_attributes(soup):
     # Instancias tanto para la sesión como para la clase que definimos para modelar las bandas.
-
+    session = Session()
     band = Band()
 
     # Del objeto "soup" (el contenido será parecido a band_page.html) que viene como parámetro:
@@ -165,10 +162,86 @@ def get_band_attributes(soup):
     # Hacemos una especie de staging a los cambios.
     session.add(band)
     # Guardamos los cambios a base de datos.
-    #session.commit()
+    session.commit()
     # Cerramos sesión.
-    #session.close()
+    session.close()
 
+
+def get_band_disco(soup, current_records):
+    # Instancia de URLExtract.
+    extractor = URLExtract()
+
+    # Abrimos sesión con la base de datos.
+    session = Session()
+
+    # Del objeto "soup" (el contenido será parecido a band_page.html) encuentra <div id="band_disco">.
+    disco_finder = soup.find("div", {"id": "band_disco"})
+    # Los tags resultantes pasan a string.
+    s_disco_finder = str(disco_finder)
+    # Extrae todos los URLs presentes.
+    disco_url = extractor.find_urls(s_disco_finder)
+
+    # Toma el primer URL y asignalo a una variable.
+    url = disco_url[0]
+    # Hace un request con dicho URL.
+    r = requests.get(url)
+
+    # Convierte el response en un objeto BeautifulSoup para su uso.
+    disco_soup = BeautifulSoup(r.text, 'html.parser')
+
+    # Del objeto "disco_soup" (el contenido será parecido a disco.html) obtiene todos los tags <tr>.
+    disco_entries = disco_soup.find_all("tr")
+
+    # Elimina el primero porque no se necesita.
+    disco_entries.pop(0)
+
+    # -> Por cada elemento en disco_entries:
+    for item in disco_entries:
+        # -> Instanciamos la discografía e insertamos.
+        discography = Discography()
+        discography.band_id = current_records
+        # -> Con un ciclo mientras x < 3:
+        for x in range(3):
+            # -> Busca todos los tags <td> usando el índice 'x'.
+            s = item.find_all("td")[x]
+            # -> Como en este caso los atributos de la discografía vienen en 3 partes, condicionamos:
+            if x == 0:
+                discography.name = str(s.getText())
+            if x == 1:
+                discography.release_type = str(s.getText())
+            if x == 2:
+                discography.year = str(s.getText())
+            # -> Una vez que termina de construir el row le damos stage.
+            session.add(discography)
+
+        session.commit()
+        session.close()
+
+def get_band_members(soup, current_records):
+    # Abrimos sesión con la base de datos.
+    session = Session()
+
+    # Del objeto "soup" (el contenido será parecido a band_page.html) encuentra <div id="band_tab_members_current">.
+    current_members = soup.find("div", {"id": "band_tab_members_current"})
+
+    # De la búsqueda anterior encuentra todos los <a class="bold">.
+    member_finder = current_members.find_all("a", {"class": "bold"})
+
+    # -> Con un ciclo mientras x < tamaño de member_finder.
+    for x in range(len(member_finder)):
+        # -> Instanciamos la clase miembro e insertamos.
+        member = Member()
+        member.band_id = current_records
+        member.name = str(member_finder[x].getText())
+        # Stage al row nuevo.
+        session.add(member)
+
+    session.commit()
+    session.close()
+
+
+if __name__ == '__main__':
+    crawler()
 
 def get_band_disco(soup):
     # Instancia de URLExtract.
