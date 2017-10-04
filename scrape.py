@@ -1,3 +1,5 @@
+# -*- coding: utf-8 -*-
+
 import urllib.request, time, json, requests, os
 from urlextract import URLExtract
 from bs4 import BeautifulSoup
@@ -41,6 +43,8 @@ class Member(Base):
     id = Column('id', Integer, primary_key=True)
     name = Column('name', String)
     band_id = Column('band_id', Integer, ForeignKey("Band.id"), nullable=False)
+
+
 
 engine = create_engine('sqlite:///swedish_bands.db', echo=True)
 # Estos dos son necesarios para cada sesión de base de datos.
@@ -91,25 +95,16 @@ def crawler():
 
             current_records += 1
 
-            # if not os.path.exists('band_pages/{}'.format(page)):
-            #     os.makedirs('band_pages/{}'.format(page))
-
             s_json_data = str(json_data["aaData"][x][0])
             extracted_url = extractor.find_urls(s_json_data)
 
             r = requests.get(extracted_url[0])
             if r.status_code == 200:
-                soup = BeautifulSoup(r.text, 'html.parser')
+                soup = BeautifulSoup(r.content, 'html.parser')
 
                 get_band_attributes(soup)
                 get_band_disco(soup, current_records)
                 get_band_members(soup, current_records)
-
-
-                # with open('band_pages/{}/{}.html'.format(page, x), 'w', encoding="utf-8") as bp:
-                #    bp.write(str(soup))
-
-
 
                 print("Status code {}.".format(r.status_code))
                 print("{} / {}".format(current_records, total_records))
@@ -189,8 +184,10 @@ def get_band_disco(soup, current_records):
     # Hace un request con dicho URL.
     r = requests.get(url)
 
+    r.encoding = 'utf-8'
+
     # Convierte el response en un objeto BeautifulSoup para su uso.
-    disco_soup = BeautifulSoup(r.text, 'html.parser')
+    disco_soup = BeautifulSoup(r.content, 'html.parser')
 
     # Del objeto "disco_soup" (el contenido será parecido a disco.html) obtiene todos los tags <tr>.
     disco_entries = disco_soup.find_all("tr")
@@ -241,10 +238,7 @@ def get_band_members(soup, current_records):
 
     session.commit()
     session.close()
-
-
-if __name__ == '__main__':
-    crawler()
+    
 
 def get_band_disco(soup):
     # Instancia de URLExtract.
@@ -266,7 +260,7 @@ def get_band_disco(soup):
     r = requests.get(url)
 
     # Convierte el response en un objeto BeautifulSoup para su uso.
-    disco_soup = BeautifulSoup(r.text, 'html.parser')
+    disco_soup = BeautifulSoup(r.content, 'html.parser')
 
     # Del objeto "disco_soup" (el contenido será parecido a disco.html) obtiene todos los tags <tr>.
     disco_entries = disco_soup.find_all("tr")
