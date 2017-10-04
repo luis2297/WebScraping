@@ -45,8 +45,8 @@ def crawler():
 
             current_records += 1
 
-            if not os.path.exists('band_pages/{}'.format(page)):
-                os.makedirs('band_pages/{}'.format(page))
+            # if not os.path.exists('band_pages/{}'.format(page)):
+            #     os.makedirs('band_pages/{}'.format(page))
 
             s_json_data = str(json_data["aaData"][x][0])
             extracted_url = extractor.find_urls(s_json_data)
@@ -54,9 +54,9 @@ def crawler():
             r = requests.get(extracted_url[0])
             if r.status_code == 200:
                 soup = BeautifulSoup(r.text, 'html.parser')
-                with open('band_pages/{}/{}.html'.format(page, x), 'w', encoding="utf-8") as bp:
-                    bp.write(str(soup))
-                    
+                # with open('band_pages/{}/{}.html'.format(page, x), 'w', encoding="utf-8") as bp:
+                #     bp.write(str(soup))
+
                 print("Status code {}.".format(r.status_code))
                 print("{} / {}".format(current_records, total_records))
             else:
