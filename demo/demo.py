@@ -64,7 +64,7 @@ Session = sessionmaker(bind=engine)
 
 def soup_it_up():
     # El URL puede ser cualquier perfil de banda en MA, -debería- funcionar. :D
-    url = 'https://www.metal-archives.com/bands/At_the_Gates/43'
+    url = 'https://www.metal-archives.com/bands/Abomation/3540394749'
 
     # Va por el response usando el URL anterior.
     r = requests.get(url)
@@ -175,7 +175,11 @@ def get_band_disco(soup):
         # -> Con un ciclo mientras x < 3:
         for x in range(3):
             # -> Busca todos los tags <td> usando el índice 'x'.
-            s = item.find_all("td")[x]
+            try:
+                s = item.find_all("td")[x]
+            except:
+                session.close()
+                return
             # -> Como en este caso los atributos de la discografía vienen en 3 partes, condicionamos:
             if x == 0:
                 discography.name = str(s.getText())

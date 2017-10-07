@@ -106,13 +106,7 @@ def crawler():
                 get_band_disco(soup, current_records)
                 get_band_members(soup, current_records)
 
-                print("Status code {}.".format(r.status_code))
-                print("{} / {}".format(current_records, total_records))
-            else:
-                print("Error: Status code {}.".format(r.status_code))
-                print("{} / {}".format(current_records, total_records))
-
-            time.sleep(1)
+            time.sleep(2)
 
         page += 1
         display_start += 500
@@ -201,21 +195,24 @@ def get_band_disco(soup, current_records):
         discography = Discography()
         discography.band_id = current_records
         # -> Con un ciclo mientras x < 3:
-        for x in range(3):
-            # -> Busca todos los tags <td> usando el índice 'x'.
-            s = item.find_all("td")[x]
-            # -> Como en este caso los atributos de la discografía vienen en 3 partes, condicionamos:
-            if x == 0:
-                discography.name = str(s.getText())
-            if x == 1:
-                discography.release_type = str(s.getText())
-            if x == 2:
-                discography.year = str(s.getText())
-            # -> Una vez que termina de construir el row le damos stage.
-            session.add(discography)
+        try:
+            for x in range(3):
+                # -> Busca todos los tags <td> usando el índice 'x'.
+                s = item.find_all("td")[x]
+                # -> Como en este caso los atributos de la discografía vienen en 3 partes, condicionamos:
+                if x == 0:
+                    discography.name = str(s.getText())
+                if x == 1:
+                    discography.release_type = str(s.getText())
+                if x == 2:
+                    discography.year = str(s.getText())
+                # -> Una vez que termina de construir el row le damos stage.
+                session.add(discography)
+            session.commit()
+            session.close()
+        except:
+            session.close()
 
-        session.commit()
-        session.close()
 
 def get_band_members(soup, current_records):
     # Abrimos sesión con la base de datos.
