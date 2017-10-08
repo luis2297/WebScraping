@@ -7,8 +7,10 @@ from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, relationship
 
+# Instancia de declarative_base, todas las clases para mapeo la utilizan.
 Base = declarative_base()
 
+# Patrón de diseño Factory para las clases de ORM.
 class fact(object):
     def factory(clase):
         cl = clase.upper()
@@ -64,6 +66,7 @@ Session = sessionmaker(bind=engine)
 
 
 def current_target_url(page, display_start):
+    # Actualizará el URL para cambiar a la siguiente página del DT si es necesario.
     target_url = 'https://www.metal-archives.com/browse/ajax-country/c/SE/json/1'
     target_url += '?sEcho={}&iColumns=4&sColumns=&iDisplayStart={}&iDisplayLength=500'.format(page, display_start)
     target_url += '&mDataProp_0=0&mDataProp_1=1&mDataProp_2=2&mDataProp_3=3&iSortCol_0=0'
@@ -73,6 +76,7 @@ def current_target_url(page, display_start):
     return target_url
 
 def get_total_records(target_url):
+    # Trae el número de entradas del DataTable entero.
     with urllib.request.urlopen(target_url) as url:
         data = json.loads(url.read().decode())
         total_records = data["iTotalRecords"]
@@ -80,6 +84,7 @@ def get_total_records(target_url):
     return total_records
 
 def get_json_data(target_url):
+    # Trae datos necesarios del json.
     with urllib.request.urlopen(target_url) as url:
         data = json.loads(url.read().decode())
 
@@ -87,42 +92,61 @@ def get_json_data(target_url):
 
 
 def crawler():
+    # Instancia de URLExtract.
     extractor = URLExtract()
 
+    # Parametros para iniciar el scraping en el DataTable.
     page = 1
     display_start = 0
     current_records = 0
 
+    # URL inicial.
     target_url = current_target_url(page, display_start)
 
+    # Records totales y entradas de la primera página.
     total_records = get_total_records(target_url)
     json_data = get_json_data(target_url)
 
 
+    # Mientras no se pase del total de records:
     while current_records < total_records:
+        # -> Por cada 500 elementos:
         for x in range(500):
+            # -> Condición para cuando no hay más que buscar.
             if current_records == total_records:
                 break
 
+            # -> Contador de records actuales.
             current_records += 1
 
+            # -> Castea los datos de las bandas desde el DT a string.
+            # -> Busca el URL de su respectivo perfil.
             s_json_data = str(json_data["aaData"][x][0])
             extracted_url = extractor.find_urls(s_json_data)
 
+            # -> Se hace un get al URL extraído (perfil de la banda).
             r = requests.get(extracted_url[0])
+            # -> Si el request sale bien:
             if r.status_code == 200:
                 soup = BeautifulSoup(r.content, 'html.parser')
 
+                # -> Hacemos el parseo de los atributos junto con la inserción objeto -> BD.
                 get_band_attributes(soup)
                 get_band_disco(soup, current_records)
                 get_band_members(soup, current_records)
 
+            # -> 2 segundos de espera por ciclo.
             time.sleep(2)
 
+        # Cada 500 entradas:
+        # -> Cambia de pagina en DataTable.
         page += 1
+        # -> Muestra las siguientes 500 bandas.
         display_start += 500
 
+        # Actualización de URL inicial.
         target_url = current_target_url(page, display_start)
+        # Actualización de json inicial.
         json_data = get_json_data(target_url)
 
 def get_band_attributes(soup):
@@ -162,7 +186,7 @@ def get_band_attributes(soup):
     band.label = formatted_attributes[6]
     band.years_active = formatted_attributes[7]
 
-    # Hacemos una especie de staging a los cambios.
+    # Creamos el row.
     session.add(band)
     # Guardamos los cambios a base de datos.
     session.commit()
@@ -184,11 +208,12 @@ def get_band_disco(soup, current_records):
     # Extrae todos los URLs presentes.
     disco_url = extractor.find_urls(s_disco_finder)
 
-    # Toma el primer URL y asignalo a una variable.
+    # Toma el primer URL y asigna a una variable.
     url = disco_url[0]
     # Hace un request con dicho URL.
     r = requests.get(url)
 
+    # Algo para los caracteres raros, por si los hay.
     r.encoding = 'utf-8'
 
     # Convierte el response en un objeto BeautifulSoup para su uso.
@@ -205,8 +230,9 @@ def get_band_disco(soup, current_records):
         # -> Instanciamos la discografía e insertamos.
         discography = fact.factory("discography")
         discography.band_id = current_records
-        # -> Con un ciclo mientras x < 3:
+        # -> Intentamos:
         try:
+            # -> En un ciclo de x < 3:
             for x in range(3):
                 # -> Busca todos los tags <td> usando el índice 'x'.
                 s = item.find_all("td")[x]
@@ -217,11 +243,14 @@ def get_band_disco(soup, current_records):
                     discography.release_type = str(s.getText())
                 if x == 2:
                     discography.year = str(s.getText())
-                # -> Una vez que termina de construir el row le damos stage.
+                # -> Agregamos el row.
                 session.add(discography)
+            # Guardamos cambios.
             session.commit()
+            # Cerramos sesión.
             session.close()
         except:
+            # En caso de que la banda no tenga releases sólo pasa al siguiente.
             session.close()
 
 
@@ -241,10 +270,11 @@ def get_band_members(soup, current_records):
         member = fact.factory("member")
         member.band_id = current_records
         member.name = str(member_finder[x].getText())
-        # Stage al row nuevo.
+        # Agregamos el row nuevo.
         session.add(member)
-
+    # Guardamos los cambios.
     session.commit()
+    # Cerramos sesión.
     session.close()
 
 
