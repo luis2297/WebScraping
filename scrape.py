@@ -9,8 +9,19 @@ from sqlalchemy.orm import sessionmaker, relationship
 
 Base = declarative_base()
 
+class fact(object):
+    def factory(clase):
+        cl = clase.upper()
+        if cl == "BAND":
+            return Band()
+        elif cl == "DISCOGRAPHY":
+            return Discography()
+        elif cl == "MEMBER":
+            return Member()
+
+
 # Modelamos una clase "Band" para todos los atributos que extraímos.
-class Band(Base):
+class Band(Base, fact):
     __tablename__ = "Band"
 
     id = Column('id', Integer, primary_key=True)
@@ -26,7 +37,7 @@ class Band(Base):
 
 
 # Modelamos una clase "Discography" para todos los atributos que extraímos.
-class Discography(Base):
+class Discography(Base, fact):
     __tablename__ = "Discography"
 
     id = Column('id', Integer, primary_key=True)
@@ -37,7 +48,7 @@ class Discography(Base):
 
 
 # Modelamos una clase "Member" para todos los atributos que extraímos.
-class Member(Base):
+class Member(Base, fact):
     __tablename__ = "Member"
 
     id = Column('id', Integer, primary_key=True)
@@ -117,7 +128,7 @@ def crawler():
 def get_band_attributes(soup):
     # Instancias tanto para la sesión como para la clase que definimos para modelar las bandas.
     session = Session()
-    band = Band()
+    band = fact.factory("band")
 
     # Del objeto "soup" (el contenido será parecido a band_page.html) que viene como parámetro:
     # -> Busca <h1 class="band_name">, que es el tag donde se encuentra el nombre de la banda.
@@ -192,7 +203,7 @@ def get_band_disco(soup, current_records):
     # -> Por cada elemento en disco_entries:
     for item in disco_entries:
         # -> Instanciamos la discografía e insertamos.
-        discography = Discography()
+        discography = fact.factory("discography")
         discography.band_id = current_records
         # -> Con un ciclo mientras x < 3:
         try:
@@ -227,7 +238,7 @@ def get_band_members(soup, current_records):
     # -> Con un ciclo mientras x < tamaño de member_finder.
     for x in range(len(member_finder)):
         # -> Instanciamos la clase miembro e insertamos.
-        member = Member()
+        member = fact.factory("member")
         member.band_id = current_records
         member.name = str(member_finder[x].getText())
         # Stage al row nuevo.
