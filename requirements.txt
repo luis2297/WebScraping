@@ -1,0 +1,5 @@
+urllib
+requests
+urlextract
+bs4
+sqlalchemy
