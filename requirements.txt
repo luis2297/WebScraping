@@ -1,4 +1,3 @@
-urllib
 requests
 urlextract
 bs4
