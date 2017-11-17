@@ -80,6 +80,8 @@ def get_total_records(target_url):
     with urllib.request.urlopen(target_url) as url:
         data = json.loads(url.read().decode())
         total_records = data["iTotalRecords"]
+    
+        
 
     return total_records
 
@@ -87,6 +89,7 @@ def get_json_data(target_url):
     # Trae datos necesarios del json.
     with urllib.request.urlopen(target_url) as url:
         data = json.loads(url.read().decode())
+        
 
     return data
 
