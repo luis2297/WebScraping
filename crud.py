@@ -1,6 +1,6 @@
 from sqlalchemy import create_engine, text, delete
 from sqlalchemy.sql import *
-from test import Band, Discography, Member
+#from test import Band, Discography, Member
 
 
 engine = create_engine('sqlite:///sb.db')
