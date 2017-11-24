@@ -1,5 +1,3 @@
-import sys
-import coverage
 import unittest
 from scrape import get_total_records,current_target_url,get_json_data
 from crud import selectFromBand,selectFromDiscography,selectFromMember
