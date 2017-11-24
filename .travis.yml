@@ -6,4 +6,4 @@ install:
   - pip install -r requirements.txt
 #script de ejecucion
 script:
-  - py -m test_scrape.py     	
+  - pytest     	
